@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Usia Terbaik</title>
+    
+    <style>
+        /* Reset Dasar */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px; /* Batasi lebar untuk desktop/laptop */
+            margin-top: 50px;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        /* Formulir dan Input */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box; 
+            font-size: 16px;
+        }
+
+        /* Tombol Hitung Usia */
+        button {
+            background-color: #28a745; /* Warna hijau */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        /* Hasil */
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        /* Gaya Hasil Berdasarkan Status */
+        .success { background-color: #e9f7ef; border: 1px solid #c3e6cb; } /* Hijau Muda (Sukses) */
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }   /* Merah Muda (Error) */
+        .warning { background-color: #fff3cd; border: 1px solid #ffeeba; } /* Kuning Muda (Peringatan) */
+
+        #result-title {
+            color: #007bff;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        #result-text {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .success #result-text { color: #28a745; } 
+        .error #result-text { color: #721c24; } 
+        .warning #result-text { color: #856404; } 
+
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>👶 Kalkulator Usia</h1>
+        <p>Masukkan tanggal, bulan, dan tahun lahir Anda, lalu tekan tombol **Hitung Usia**.</p>
+
+        <form id="age-calculator-form">
+            <div class="input-group">
+                <label for="birthdate">Tanggal Lahir:</label>
+                <input type="date" id="birthdate" required>
+            </div>
+
+            <button type="submit" id="calculate-btn">Hitung Usia</button>
+        </form>
+
+        <div id="result-container" class="result-container" style="display: none;">
+            <h2 id="result-title"></h2>
+            <p id="result-text"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('age-calculator-form');
+            const resultContainer = document.getElementById('result-container');
+            const resultTitle = document.getElementById('result-title');
+            const resultText = document.getElementById('result-text');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Mencegah form reload halaman
+                calculateAge();
+            });
+
+            /** Menampilkan hasil dengan gaya yang sesuai (success, error, warning) */
+            function displayResult(title, text, type) {
+                resultTitle.textContent = title;
+                resultText.innerHTML = text; // Gunakan innerHTML untuk bold pada teks hasil
+                
+                resultContainer.classList.remove('success', 'error', 'warning');
+
+                if (type === 'success') {
+                    resultContainer.classList.add('success');
+                } else if (type === 'error') {
+                    resultContainer.classList.add('error');
+                } else if (type === 'warning') {
+                    resultContainer.classList.add('warning');
+                }
+                
+                resultContainer.style.display = 'block';
+            }
+
+
+            /** Logika utama untuk menghitung usia */
+            function calculateAge() {
+                const birthdateInput = document.getElementById('birthdate').value;
+
+                if (!birthdateInput) {
+                    displayResult("⚠️ Kesalahan Input", "Mohon masukkan tanggal lahir Anda.", 'error');
+                    return;
+                }
+
+                const birthDate = new Date(birthdateInput);
+                const today = new Date();
+                
+                // Set waktu ke tengah malam untuk akurasi tanggal
+                birthDate.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
+
+
+                if (birthDate > today) {
+                    displayResult("🤔 Tanggal Lahir Tidak Valid", "Tanggal lahir tidak mungkin di masa depan.", 'warning');
+                    return;
+                }
+
+                // Penghitungan Usia
+                let years = today.getFullYear() - birthDate.getFullYear();
+                let months = today.getMonth() - birthDate.getMonth();
+                let days = today.getDate() - birthDate.getDate();
+
+                // Koreksi jika hari kurang
+                if (days < 0) {
+                    months--;
+                    const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0); 
+                    days += lastMonth.getDate();
+                }
+
+                // Koreksi jika bulan kurang
+                if (months < 0) {
+                    years--;
+                    months += 12;
+                }
+
+                // Tampilkan Hasil
+                let ageText = "";
+                if (years < 1) {
+                    ageText = `Anda berusia **${months} bulan** dan **${days} hari**.`;
+                } else {
+                    ageText = `Anda berusia **${years} tahun**, **${months} bulan**, dan **${days} hari**.`;
+                }
+                
+                displayResult("🎉 Usia Anda Saat Ini:", ageText, 'success');
+            }
+        });
+    </script>
+</body>
+</html>
